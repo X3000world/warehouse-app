@@ -35,8 +35,232 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
 
 <div id="app">
+<div id="memoView" class="view-section">
 
-正在初始化...
+
+<h2>
+📝 添加备忘
+</h2>
+
+
+
+<div class="form-group">
+
+<label>
+客户名称
+</label>
+
+<input 
+type="text"
+id="memoName"
+placeholder="例如：杭州男装">
+
+</div>
+
+
+
+
+
+<!-- 吊牌区域 -->
+
+<div class="form-group">
+
+
+<label>
+吊牌/洗水唛/主唛
+</label>
+
+
+
+<input 
+type="file"
+id="tagCamera"
+accept="image/*"
+capture="environment"
+multiple
+hidden>
+
+
+<input 
+type="file"
+id="tagGallery"
+accept="image/*"
+multiple
+hidden>
+
+
+
+<button
+class="btn btn-info"
+onclick="
+document.getElementById('tagCamera').click()
+">
+
+📷 拍照
+
+</button>
+
+
+
+<button
+class="btn btn-primary"
+onclick="
+document.getElementById('tagGallery').click()
+">
+
+🖼 相册
+
+</button>
+
+
+
+<div 
+id="tagPreview"
+class="image-list">
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<!-- 物流 -->
+
+<div class="form-group">
+
+
+<label>
+物流
+</label>
+
+
+<textarea
+id="memoLogistics"
+class="code-box"
+placeholder="物流信息">
+
+</textarea>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- 备注 -->
+
+
+<div class="form-group">
+
+
+<label>
+备注
+</label>
+
+
+<textarea
+id="memoRemark"
+class="code-box"
+placeholder="备注信息">
+
+</textarea>
+
+
+</div>
+
+
+
+
+
+<!-- 备注图片 -->
+
+
+<div class="form-group">
+
+
+<label>
+备注图片
+</label>
+
+
+
+<input 
+type="file"
+id="remarkCamera"
+accept="image/*"
+capture="environment"
+multiple
+hidden>
+
+
+<input 
+type="file"
+id="remarkGallery"
+accept="image/*"
+multiple
+hidden>
+
+
+
+
+<button
+class="btn btn-info"
+onclick="
+document.getElementById('remarkCamera').click()
+">
+
+📷 拍照
+
+</button>
+
+
+
+<button
+class="btn btn-primary"
+onclick="
+document.getElementById('remarkGallery').click()
+">
+
+🖼 相册
+
+</button>
+
+
+
+
+<div
+id="remarkPreview"
+class="image-list">
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<button
+class="btn btn-success"
+onclick="saveMemoPage()">
+
+保存
+
+</button>
+
+
+
+</div>
 
 </div>
 
