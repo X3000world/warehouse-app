@@ -1,39 +1,77 @@
-const DB_NAME = "warehouse_db_v2";
-const DB_VERSION = 2;
+// ================================
+// IndexedDB 数据库
+// ================================
 
 
-let warehouseDB = null;
+const DB_NAME = "WarehouseDB";
+
+const DB_VERSION = 1;
+
+
+let db;
 
 
 
 // 初始化数据库
 
-function openDB(){
+function initDB(){
 
 
 return new Promise((resolve,reject)=>{
 
 
-const request = indexedDB.open(
-DB_NAME,
-DB_VERSION
+const request =
+indexedDB.open(DB_NAME,DB_VERSION);
+
+
+
+request.onerror=function(){
+
+console.error(
+"数据库打开失败"
 );
+
+reject(request.error);
+
+};
+
+
+
+
+
+request.onsuccess=function(e){
+
+db=e.target.result;
+
+console.log(
+"IndexedDB启动成功"
+);
+
+resolve(db);
+
+};
+
+
 
 
 
 request.onupgradeneeded=function(e){
 
 
-const db=e.target.result;
+db=e.target.result;
 
 
 
-//库存表
+// =====================
+// 库存表
+// =====================
+
 
 if(!db.objectStoreNames.contains("inventory")){
 
 
-let store=db.createObjectStore(
+let inventoryStore =
+db.createObjectStore(
 "inventory",
 {
 keyPath:"id",
@@ -43,7 +81,7 @@ autoIncrement:true
 
 
 
-store.createIndex(
+inventoryStore.createIndex(
 "style",
 "style",
 {
@@ -52,15 +90,33 @@ unique:false
 );
 
 
+
+inventoryStore.createIndex(
+"shelf",
+"shelf",
+{
+unique:false
+}
+);
+
+
+
 }
 
 
 
-//备忘表
+
+
+// =====================
+// 备忘表
+// =====================
+
+
 
 if(!db.objectStoreNames.contains("memo")){
 
 
+let memoStore =
 db.createObjectStore(
 "memo",
 {
@@ -70,25 +126,19 @@ autoIncrement:true
 );
 
 
-}
 
-
-
-//图片表
-
-if(!db.objectStoreNames.contains("images")){
-
-
-db.createObjectStore(
-"images",
+memoStore.createIndex(
+"customer",
+"customer",
 {
-keyPath:"id",
-autoIncrement:true
+unique:false
 }
 );
 
 
+
 }
+
 
 
 
@@ -97,30 +147,57 @@ autoIncrement:true
 
 
 
-request.onsuccess=function(e){
+
+});
 
 
-warehouseDB=e.target.result;
+}
 
 
-console.log(
-"数据库连接成功"
+
+
+
+
+// ================================
+// 通用新增
+// ================================
+
+
+function addData(storeName,data){
+
+
+return new Promise((resolve,reject)=>{
+
+
+const tx =
+db.transaction(
+storeName,
+"readwrite"
 );
 
 
-resolve(warehouseDB);
+
+const store =
+tx.objectStore(storeName);
 
 
+
+let request =
+store.add(data);
+
+
+
+request.onsuccess=function(){
+
+resolve(request.result);
 
 };
 
 
 
-request.onerror=function(e){
+request.onerror=function(){
 
-
-reject(e);
-
+reject(request.error);
 
 };
 
@@ -134,138 +211,110 @@ reject(e);
 
 
 
-async function initDatabase(){
 
-if(!warehouseDB){
 
-await openDB();
+
+
+// ================================
+// 查询全部
+// ================================
+
+
+function getAllData(storeName){
+
+
+return new Promise((resolve,reject)=>{
+
+
+let tx =
+db.transaction(
+storeName,
+"readonly"
+);
+
+
+
+let store =
+tx.objectStore(storeName);
+
+
+
+let request =
+store.getAll();
+
+
+
+request.onsuccess=function(){
+
+resolve(request.result);
+
+};
+
+
+
+request.onerror=function(){
+
+reject(request.error);
+
+};
+
+
+
+});
+
 
 }
 
 
-}
 
 
 
 
 
 
-// ==========================
-// 通用事务
-// ==========================
+// ================================
+// 根据ID查询
+// ================================
 
 
-function getStore(
-table,
-mode="readonly"
+function getDataById(
+storeName,
+id
 ){
 
 
-return warehouseDB
-.transaction(
-table,
-mode
-)
-.objectStore(table);
-
-
-}
-
-
-
-
-// ==========================
-// 添加库存
-// ==========================
-
-
-function addInventory(data){
-
-
 return new Promise((resolve,reject)=>{
 
 
-const time=new Date()
-.toISOString();
-
-
-
-data.createTime=time;
-
-data.updateTime=time;
-
-
-
-const request=
-getStore(
-"inventory",
-"readwrite"
-)
-.add(data);
-
-
-
-request.onsuccess=()=>{
-
-resolve();
-
-};
-
-
-request.onerror=e=>{
-
-reject(e);
-
-};
-
-
-
-});
-
-}
-
-
-
-
-
-
-
-// ==========================
-// 获取全部库存
-// ==========================
-
-
-function getAllInventory(){
-
-
-return new Promise((resolve,reject)=>{
-
-
-const request=
-getStore(
-"inventory"
-)
-.getAll();
-
-
-
-request.onsuccess=()=>{
-
-
-resolve(
-request.result
+let tx =
+db.transaction(
+storeName,
+"readonly"
 );
 
 
+
+let store =
+tx.objectStore(storeName);
+
+
+
+let request =
+store.get(id);
+
+
+
+request.onsuccess=function(){
+
+resolve(request.result);
+
 };
 
 
 
-request.onerror=e=>{
+request.onerror=function(){
 
-
-reject(e);
-
+reject(request.error);
 
 };
 
@@ -282,46 +331,51 @@ reject(e);
 
 
 
-// ==========================
-// 修改库存
-// ==========================
 
 
-function updateInventory(data){
+// ================================
+// 修改
+// ================================
+
+
+function updateData(
+storeName,
+data
+){
 
 
 return new Promise((resolve,reject)=>{
 
 
-data.updateTime=
-new Date()
-.toISOString();
-
-
-
-const request=
-getStore(
-"inventory",
+let tx =
+db.transaction(
+storeName,
 "readwrite"
-)
-.put(data);
+);
 
 
 
-request.onsuccess=()=>{
+let store =
+tx.objectStore(storeName);
 
 
-resolve();
 
+let request =
+store.put(data);
+
+
+
+request.onsuccess=function(){
+
+resolve(true);
 
 };
 
 
-request.onerror=e=>{
 
+request.onerror=function(){
 
-reject(e);
-
+reject(request.error);
 
 };
 
@@ -338,37 +392,50 @@ reject(e);
 
 
 
-// ==========================
-// 删除库存
-// ==========================
+
+// ================================
+// 删除
+// ================================
 
 
-function deleteInventory(id){
+function deleteData(
+storeName,
+id
+){
 
 
 return new Promise((resolve,reject)=>{
 
 
-const request=
-getStore(
-"inventory",
+let tx =
+db.transaction(
+storeName,
 "readwrite"
-)
-.delete(id);
+);
 
 
 
-request.onsuccess=()=>{
+let store =
+tx.objectStore(storeName);
 
-resolve();
+
+
+let request =
+store.delete(id);
+
+
+
+request.onsuccess=function(){
+
+resolve(true);
 
 };
 
 
 
-request.onerror=e=>{
+request.onerror=function(){
 
-reject(e);
+reject(request.error);
 
 };
 
@@ -384,27 +451,16 @@ reject(e);
 
 
 
-// ==========================
-// 清空库存
-// ==========================
 
 
-function clearInventory(){
+// ================================
+// 时间
+// ================================
 
 
-return new Promise((resolve)=>{
+function nowTime(){
 
-
-getStore(
-"inventory",
-"readwrite"
-)
-.clear()
-.onsuccess=()=>resolve();
-
-
-
-});
-
+return new Date()
+.toLocaleString();
 
 }
