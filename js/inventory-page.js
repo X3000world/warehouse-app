@@ -355,3 +355,58 @@ document
 
 
 }
+async function batchInventorySubmit(){
+
+
+
+const text=
+document
+.getElementById(
+"batchInventory"
+)
+.value;
+
+
+
+const count=
+await batchCreateInventory(text);
+
+
+
+alert(
+"成功添加 "+count+" 条"
+);
+
+
+
+document
+.getElementById(
+"batchInventory"
+)
+.value="";
+
+
+
+renderInventoryPage();
+
+
+}
+
+
+
+
+function formatTime(time){
+
+
+if(!time){
+
+return "-";
+
+}
+
+
+return new Date(time)
+.toLocaleString();
+
+
+}
