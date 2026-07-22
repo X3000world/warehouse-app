@@ -1,32 +1,32 @@
 {
-"name":"仓库管理系统",
+    "name": "仓库管理系统",
+    "short_name": "仓库管理",
+    "description": "手机端仓库货架查询与备忘管理系统",
+    
+    "start_url": "./index.html",
 
-"short_name":"仓库",
+    "display": "standalone",
 
-"description":"个人仓库查询管理工具",
+    "orientation": "portrait",
 
+    "background_color": "#f5f7fa",
 
-"start_url":"./",
-
-"display":"standalone",
-
-
-"background_color":"#f5f7fa",
-
-"theme_color":"#3498db",
+    "theme_color": "#3498db",
 
 
-"orientation":"portrait",
+    "icons": [
 
+        {
+            "src": "images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
 
-"icons":[
+        {
+            "src": "images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
 
-{
-"src":"assets/icon.png",
-"sizes":"512x512",
-"type":"image/png"
-}
-
-]
-
+    ]
 }
