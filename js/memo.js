@@ -1,211 +1,132 @@
-/**
- * 备忘管理模块
- */
+// =================================
+// 备忘管理模块
+// =================================
 
 
 let currentMemoId = null;
 
 
-/**
- * 创建备忘
- */
+// 当前图片缓存
 
-async function addMemo(data){
+let currentTagImages = [];
 
-
-const time =
-new Date()
-.toISOString();
+let currentRemarkImages = [];
 
 
 
-const memo={
+
+// =================================
+// 打开添加窗口
+// =================================
 
 
-name:data.name,
+function openMemo(){
 
 
-logistics:data.logistics || "",
+currentMemoId = null;
 
 
-remark:data.remark || "",
+currentTagImages = [];
 
-
-
-tagImages:data.tagImages || [],
-
-
-remarkImages:data.remarkImages || [],
-
-
-
-createTime:time,
-
-updateTime:time
-
-
-};
+currentRemarkImages = [];
 
 
 
-return new Promise(
-(resolve,reject)=>{
+document.getElementById(
+"memoCustomer"
+).value="";
 
 
-const request =
-getStore(
+
+document.getElementById(
+"memoLogistics"
+).value="";
+
+
+
+document.getElementById(
+"memoRemark"
+).value="";
+
+
+
+renderImagePreview();
+
+
+
+showMemoModal();
+
+
+}
+
+
+
+
+
+
+// =================================
+// 编辑备忘
+// =================================
+
+
+async function editMemo(id){
+
+
+
+let data =
+await getDataById(
 "memo",
-"readwrite"
-)
-.add(memo);
+id
+);
 
 
 
-request.onsuccess=function(){
+if(!data)
+return;
 
-resolve(request.result);
 
-};
 
+currentMemoId=id;
 
 
-request.onerror=reject;
 
+document.getElementById(
+"memoCustomer"
+).value =
+data.customer;
 
-});
 
 
-}
+document.getElementById(
+"memoLogistics"
+).value =
+data.logistics || "";
 
 
 
+document.getElementById(
+"memoRemark"
+).value =
+data.remark || "";
 
 
 
-/**
- * 获取全部备忘
- */
+currentTagImages =
+data.tagImages || [];
 
 
-function getAllMemo(){
 
+currentRemarkImages =
+data.remarkImages || [];
 
-return new Promise(
-(resolve,reject)=>{
 
 
-const request =
-getStore(
-"memo"
-)
-.getAll();
+renderImagePreview();
 
 
 
-request.onsuccess=function(){
+showMemoModal();
 
-
-resolve(request.result);
-
-
-};
-
-
-
-request.onerror=reject;
-
-
-});
-
-
-}
-
-
-
-
-
-
-/**
- * 根据ID查询
- */
-
-
-function getMemo(id){
-
-
-return new Promise(
-(resolve,reject)=>{
-
-
-const request =
-getStore(
-"memo"
-)
-.get(id);
-
-
-
-request.onsuccess=function(){
-
-resolve(request.result);
-
-};
-
-
-
-request.onerror=reject;
-
-
-});
-
-
-}
-
-
-
-
-
-
-
-/**
- * 修改备忘
- */
-
-
-function updateMemo(data){
-
-
-return new Promise(
-(resolve,reject)=>{
-
-
-data.updateTime =
-new Date()
-.toISOString();
-
-
-
-const request =
-getStore(
-"memo",
-"readwrite"
-)
-.put(data);
-
-
-
-request.onsuccess=function(){
-
-resolve();
-
-};
-
-
-
-request.onerror=reject;
-
-
-});
 
 
 }
@@ -217,77 +138,361 @@ request.onerror=reject;
 
 
 
-/**
- * 删除备忘
- */
+// =================================
+// 保存备忘
+// =================================
 
 
-async function deleteMemoById(id){
-
-
-const memo =
-await getMemo(id);
+async function saveMemo(){
 
 
 
-if(!memo){
+let customer =
+document.getElementById(
+"memoCustomer"
+).value.trim();
+
+
+
+let logistics =
+document.getElementById(
+"memoLogistics"
+).value.trim();
+
+
+
+let remark =
+document.getElementById(
+"memoRemark"
+).value.trim();
+
+
+
+
+
+if(!customer){
+
+
+alert(
+"请输入客户名称"
+);
+
 
 return;
 
-}
-
-
-
-
-//删除吊牌图片
-
-if(memo.tagImages){
-
-for(
-let img of memo.tagImages
-){
-
-await deleteImage(img);
-
-}
-
-}
-
-
-
-//删除备注图片
-
-if(memo.remarkImages){
-
-for(
-let img of memo.remarkImages
-){
-
-await deleteImage(img);
-
-}
 
 }
 
 
 
 
-return new Promise(
-(resolve)=>{
 
 
-getStore(
+let time =
+nowTime();
+
+
+
+
+
+// 新增
+
+
+if(!currentMemoId){
+
+
+
+let memo={
+
+
+customer,
+
+
+tagImages:
+currentTagImages,
+
+
+logistics,
+
+
+remark,
+
+
+remarkImages:
+currentRemarkImages,
+
+
+
+createTime:
+time,
+
+
+updateTime:
+time
+
+
+
+};
+
+
+
+await addData(
 "memo",
-"readwrite"
+memo
+);
+
+
+
+alert(
+"保存成功"
+);
+
+
+
+}
+
+
+
+
+
+
+// 修改
+
+
+else{
+
+
+
+let old =
+await getDataById(
+"memo",
+currentMemoId
+);
+
+
+
+old.customer =
+customer;
+
+
+
+old.logistics =
+logistics;
+
+
+
+old.remark =
+remark;
+
+
+
+old.tagImages =
+currentTagImages;
+
+
+
+old.remarkImages =
+currentRemarkImages;
+
+
+
+old.updateTime =
+time;
+
+
+
+await updateData(
+"memo",
+old
+);
+
+
+
+alert(
+"修改成功"
+);
+
+
+
+}
+
+
+
+
+
+closeMemoModal();
+
+
+loadMemoList();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// =================================
+// 获取全部备忘
+// =================================
+
+
+async function loadMemoList(){
+
+
+
+let list =
+await getAllData(
+"memo"
+);
+
+
+
+// 最新修改排前面
+
+
+list.sort(
+(a,b)=>{
+
+return new Date(
+b.updateTime
 )
-.delete(id)
-.onsuccess=resolve;
+-
+new Date(
+a.updateTime
+);
+
+}
+
+);
+
+
+
+renderMemoList(list);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// =================================
+// 显示列表
+// =================================
+
+
+function renderMemoList(list){
+
+
+
+let box =
+document.getElementById(
+"memoList"
+);
+
+
+
+if(!box)
+return;
+
+
+
+
+let html="";
+
+
+
+
+
+list.forEach(item=>{
+
+
+html+=`
+
+<div class="memo-card">
+
+
+<h3>
+👤 ${item.customer}
+</h3>
+
+
+
+<p>
+🚚 ${item.logistics || "暂无物流"}
+</p>
+
+
+
+<p>
+📝 ${item.remark || "暂无备注"}
+</p>
+
+
+
+
+<div class="time">
+
+添加：
+${item.createTime}
+
+<br>
+
+修改：
+${item.updateTime}
+
+</div>
+
+
+
+
+<button onclick="editMemo(${item.id})">
+
+编辑
+
+</button>
+
+
+
+<button onclick="deleteMemo(${item.id})">
+
+删除
+
+</button>
+
+
+
+</div>
+
+
+`;
 
 
 
 });
 
 
+
+
+
+box.innerHTML =
+html ||
+"暂无备忘";
+
+
+
 }
 
 
@@ -297,28 +502,34 @@ getStore(
 
 
 
-/**
- * 保存吊牌图片
- */
+
+// =================================
+// 删除
+// =================================
 
 
-async function addTagImage(file){
-
-
-const base64 =
-await compressImage(file);
+async function deleteMemo(id){
 
 
 
-const id =
-await saveImage(
-base64,
-"tag"
+if(
+!confirm(
+"确定删除?"
+)
+)
+return;
+
+
+
+await deleteData(
+"memo",
+id
 );
 
 
 
-return id;
+loadMemoList();
+
 
 
 }
@@ -329,28 +540,28 @@ return id;
 
 
 
-/**
- * 保存备注图片
- */
 
 
-async function addRemarkImage(file){
+// =================================
+// 弹窗控制
+// =================================
 
 
-const base64 =
-await compressImage(file);
+function showMemoModal(){
 
 
 
-const id =
-await saveImage(
-base64,
-"remark"
+let modal =
+document.getElementById(
+"memoModal"
 );
 
 
 
-return id;
+if(modal)
+
+modal.style.display="block";
+
 
 
 }
@@ -358,41 +569,23 @@ return id;
 
 
 
+function closeMemoModal(){
+
+
+let modal =
+document.getElementById(
+"memoModal"
+);
 
 
 
-/**
- * 获取图片列表
- */
+if(modal)
 
-
-async function getImages(ids){
-
-
-let result=[];
-
-
-for(
-let id of ids
-){
-
-
-const img =
-await getImage(id);
+modal.style.display="none";
 
 
 
-if(img){
+currentMemoId=null;
 
-result.push(img);
-
-}
-
-
-}
-
-
-
-return result;
 
 }
