@@ -1,31 +1,99 @@
-// =================================
-// 库存管理
-// =================================
+// =====================================
+// 仓库库存模块
+// =====================================
 
 
 
-let editInventoryId = null;
+let currentEditId = null;
+
+
+
+// ================================
+// 获取全部库存
+// ================================
+
+
+async function getInventory(){
+
+
+    return await getAllData(
+        "inventory"
+    );
+
+
+}
 
 
 
 
-// 页面加载库存
-
-async function loadInventory(){
-
-
-let data =
-await getAllData(
-"inventory"
-);
 
 
 
-renderInventoryList(data);
+
+// ================================
+// 查询
+// ================================
+
+
+async function searchInventory(keyword){
+
+
+    let list =
+    await getInventory();
+
+
+
+    if(!keyword){
+
+
+        return list;
+
+
+    }
+
+
+
+    keyword =
+    keyword
+    .toLowerCase()
+    .trim();
+
+
+
+    return list.filter(
+    item=>{
+
+
+        return (
+
+            item.shelf
+            .toLowerCase()
+            .includes(keyword)
+
+
+            ||
+
+            item.style
+            .toLowerCase()
+            .includes(keyword)
+
+
+            ||
+
+            item.color
+            .toLowerCase()
+            .includes(keyword)
+
+        );
+
+
+    });
 
 
 
 }
+
+
 
 
 
@@ -38,410 +106,55 @@ renderInventoryList(data);
 // ================================
 
 
-async function addInventory(){
+async function addInventory(data){
 
 
 
-let shelf =
-prompt(
-"请输入货架号"
-);
+    let time =
+    nowTime();
 
 
 
-let style =
-prompt(
-"请输入款号"
-);
+    let item={
 
 
+        shelf:
+        data.shelf,
 
-let color =
-prompt(
-"请输入颜色"
-);
 
+        style:
+        data.style,
 
 
+        color:
+        data.color,
 
-if(
-!shelf ||
-!style ||
-!color
-){
 
-alert(
-"信息不能为空"
-);
 
-return;
+        createTime:
+        time,
 
-}
 
 
+        updateTime:
+        time
 
-let time =
-nowTime();
 
+    };
 
 
-let item={
 
 
-shelf:shelf,
+    await addData(
+        "inventory",
+        item
+    );
 
 
-style:style,
 
-
-color:color,
-
-
-createTime:time,
-
-
-updateTime:time
-
-
-};
-
-
-
-
-await addData(
-"inventory",
-item
-);
-
-
-
-alert(
-"添加成功"
-);
-
-
-
-loadInventory();
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ================================
-// 查询库存
-// ================================
-
-
-async function searchInventory(keyword){
-
-
-
-let data =
-await getAllData(
-"inventory"
-);
-
-
-
-if(!keyword){
-
-
-return data;
-
-
-}
-
-
-
-keyword =
-keyword.toLowerCase();
-
-
-
-return data.filter(item=>{
-
-
-return (
-
-item.style
-.toLowerCase()
-.includes(keyword)
-
-||
-
-item.shelf
-.toLowerCase()
-.includes(keyword)
-
-||
-
-item.color
-.toLowerCase()
-.includes(keyword)
-
-
-);
-
-
-});
-
-
-}
-
-
-
-
-
-
-
-
-
-// ================================
-// 搜索输入
-// ================================
-
-
-document.addEventListener(
-"input",
-async function(e){
-
-
-if(
-e.target.id==="searchInput"
-){
-
-
-let result =
-await searchInventory(
-e.target.value
-);
-
-
-
-renderSearchResult(result);
-
-
-
-}
-
-
-
-});
-
-
-
-
-
-
-
-
-
-// ================================
-// 查询结果显示
-// ================================
-
-
-function renderSearchResult(list){
-
-
-
-let box =
-document.getElementById(
-"searchResult"
-);
-
-
-
-if(
-list.length===0
-){
-
-box.innerHTML=
-"暂无数据";
-
-return;
-
-}
-
-
-
-let html="";
-
-
-
-list.forEach(item=>{
-
-
-html+=`
-
-<div class="card">
-
-
-<div>
-📍货架：
-${item.shelf}
-</div>
-
-
-<div>
-👕款号：
-${item.style}
-</div>
-
-
-<div>
-🎨颜色：
-${item.color}
-</div>
-
-
-<div class="time">
-
-添加：
-${item.createTime}
-
-<br>
-
-修改：
-${item.updateTime}
-
-</div>
-
-
-</div>
-
-`;
-
-
-
-});
-
-
-
-box.innerHTML=html;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-// ================================
-// 管理列表
-// ================================
-
-
-function renderInventoryList(list){
-
-
-
-let box =
-document.getElementById(
-"inventoryList"
-);
-
-
-
-if(!box)
-return;
-
-
-
-let html="";
-
-
-
-list.forEach(item=>{
-
-
-html+=`
-
-<div class="card">
-
-
-<b>
-${item.style}
-</b>
-
-
-<br>
-
-货架:
-${item.shelf}
-
-
-<br>
-
-颜色:
-${item.color}
-
-
-<br>
-
-
-<span>
-
-创建:
-${item.createTime}
-
-<br>
-
-修改:
-${item.updateTime}
-
-</span>
-
-
-<br>
-
-
-
-<button
-onclick="editInventory(${item.id})">
-
-修改
-
-</button>
-
-
-
-<button
-onclick="removeInventory(${item.id})">
-
-删除
-
-</button>
-
-
-
-</div>
-
-
-`;
-
-
-
-});
-
-
-
-
-box.innerHTML=html || "暂无数据";
+    toast(
+    "添加成功"
+    );
 
 
 
@@ -460,71 +173,55 @@ box.innerHTML=html || "暂无数据";
 // ================================
 
 
-async function editInventory(id){
+async function updateInventory(
+id,
+data
+){
 
 
 
-let item =
-await getDataById(
-"inventory",
-id
-);
+    let old =
+    await getData(
+        "inventory",
+        id
+    );
 
 
 
-if(!item)
-return;
-
-
-
-
-let shelf =
-prompt(
-"修改货架号",
-item.shelf
-);
-
-
-
-let style =
-prompt(
-"修改款号",
-item.style
-);
-
-
-
-let color =
-prompt(
-"修改颜色",
-item.color
-);
+    if(!old)
+    return;
 
 
 
 
-item.shelf=shelf;
-
-item.style=style;
-
-item.color=color;
+    old.shelf =
+    data.shelf;
 
 
-
-item.updateTime=
-nowTime();
-
+    old.style =
+    data.style;
 
 
-
-await updateData(
-"inventory",
-item
-);
+    old.color =
+    data.color;
 
 
 
-loadInventory();
+    old.updateTime =
+    nowTime();
+
+
+
+    await updateData(
+        "inventory",
+        old
+    );
+
+
+
+    toast(
+    "修改成功"
+    );
 
 
 
@@ -543,27 +240,116 @@ loadInventory();
 // ================================
 
 
-async function removeInventory(id){
+async function deleteInventory(id){
 
 
 
-if(
-!confirm(
-"确定删除？"
-)
-)
-return;
+    if(
+    !confirm(
+    "确定删除吗？"
+    )
+    )
+    return;
 
 
 
-await deleteData(
-"inventory",
-id
-);
+    await deleteData(
+        "inventory",
+        id
+    );
 
 
 
-loadInventory();
+    toast(
+    "删除成功"
+    );
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 批量导入
+// ================================
+
+
+async function batchImportInventory(text){
+
+
+
+    let lines =
+    text
+    .split("\n");
+
+
+
+    let count=0;
+
+
+
+    for(
+    let line of lines
+    ){
+
+
+        line =
+        line.trim();
+
+
+
+        if(!line)
+        continue;
+
+
+
+        let arr =
+        line.split("/");
+
+
+
+        if(
+        arr.length!==3
+        )
+        continue;
+
+
+
+        await addInventory({
+
+            shelf:
+            arr[0].trim(),
+
+
+            style:
+            arr[1].trim(),
+
+
+            color:
+            arr[2].trim()
+
+
+        });
+
+
+
+        count++;
+
+
+
+    }
+
+
+
+    toast(
+    "成功导入"+count+"条"
+    );
 
 
 
@@ -577,21 +363,208 @@ loadInventory();
 
 
 
-// 启动加载
-
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
+// ================================
+// 判断重复款号
+// ================================
 
 
-initDB()
-.then(()=>{
+async function checkStyleExist(style){
 
 
-loadInventory();
+
+    let list =
+    await getInventory();
+
+
+
+    return list.filter(
+    item=>
+    item.style===style
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 渲染库存列表
+// ================================
+
+
+async function renderInventoryList(){
+
+
+
+    let box =
+    document.getElementById(
+        "inventoryList"
+    );
+
+
+
+    if(!box)
+    return;
+
+
+
+    let list =
+    await getInventory();
+
+
+
+    let html="";
+
+
+
+    list.forEach(
+    item=>{
+
+
+        html+=`
+
+<div class="manage-item">
+
+
+<div>
+
+<b>
+${item.shelf}
+</b>
+
+<br>
+
+${item.style}
+-
+${item.color}
+
+<br>
+
+
+<small>
+创建:
+${item.createTime}
+
+<br>
+
+修改:
+${item.updateTime}
+
+</small>
+
+
+</div>
+
+
+
+<div>
+
+
+<button
+onclick="editInventory(${item.id})">
+
+修改
+
+</button>
+
+
+
+<button
+onclick="deleteInventory(${item.id})">
+
+删除
+
+</button>
+
+
+</div>
+
+
+
+</div>
+
+`;
+
 
 
 });
 
 
-});
+
+box.innerHTML =
+html ||
+"暂无数据";
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 编辑入口
+// ================================
+
+
+async function editInventory(id){
+
+
+
+let item =
+await getData(
+"inventory",
+id
+);
+
+
+
+if(!item)
+return;
+
+
+
+currentEditId=id;
+
+
+
+document
+.getElementById(
+"shelfInput"
+)
+.value =
+item.shelf;
+
+
+
+document
+.getElementById(
+"styleInput"
+)
+.value =
+item.style;
+
+
+
+document
+.getElementById(
+"colorInput"
+)
+.value =
+item.color;
+
+
+
+}
