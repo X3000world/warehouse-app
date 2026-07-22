@@ -471,7 +471,28 @@ img.src=base64;
 }
 
 
+// 注册PWA
 
+if(
+"serviceWorker" in navigator
+){
+
+
+navigator.serviceWorker.register(
+"./sw.js"
+)
+.then(()=>{
+
+
+console.log(
+"PWA启动成功"
+);
+
+
+});
+
+
+}
 
 
 
