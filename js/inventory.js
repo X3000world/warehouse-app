@@ -1,27 +1,28 @@
-/**
- * 库存管理模块
- */
-
-
-let inventoryCache=[];
+// =================================
+// 库存管理
+// =================================
 
 
 
+let editInventoryId = null;
 
-// =========================
-// 初始化库存
-// =========================
 
+
+
+// 页面加载库存
 
 async function loadInventory(){
 
 
-inventoryCache =
-await getAllInventory();
+let data =
+await getAllData(
+"inventory"
+);
 
 
 
-return inventoryCache;
+renderInventoryList(data);
+
 
 
 }
@@ -30,72 +31,475 @@ return inventoryCache;
 
 
 
-// =========================
+
+
+// ================================
 // 添加库存
-// =========================
+// ================================
 
 
-async function createInventory(
-shelf,
-style,
-color
+async function addInventory(){
+
+
+
+let shelf =
+prompt(
+"请输入货架号"
+);
+
+
+
+let style =
+prompt(
+"请输入款号"
+);
+
+
+
+let color =
+prompt(
+"请输入颜色"
+);
+
+
+
+
+if(
+!shelf ||
+!style ||
+!color
 ){
 
+alert(
+"信息不能为空"
+);
+
+return;
+
+}
 
 
-const data={
 
-shelf,
+let time =
+nowTime();
 
-style,
 
-color
+
+let item={
+
+
+shelf:shelf,
+
+
+style:style,
+
+
+color:color,
+
+
+createTime:time,
+
+
+updateTime:time
+
 
 };
 
 
 
-await addInventory(data);
 
-
-
-await loadInventory();
-
-
-}
-
-
-
-
-
-
-
-// =========================
-// 修改库存
-// =========================
-
-
-async function editInventory(
-id,
-shelf,
-style,
-color
-){
-
-
-
-const item =
-inventoryCache.find(
-x=>x.id===id
+await addData(
+"inventory",
+item
 );
 
 
 
-if(!item){
+alert(
+"添加成功"
+);
+
+
+
+loadInventory();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 查询库存
+// ================================
+
+
+async function searchInventory(keyword){
+
+
+
+let data =
+await getAllData(
+"inventory"
+);
+
+
+
+if(!keyword){
+
+
+return data;
+
+
+}
+
+
+
+keyword =
+keyword.toLowerCase();
+
+
+
+return data.filter(item=>{
+
+
+return (
+
+item.style
+.toLowerCase()
+.includes(keyword)
+
+||
+
+item.shelf
+.toLowerCase()
+.includes(keyword)
+
+||
+
+item.color
+.toLowerCase()
+.includes(keyword)
+
+
+);
+
+
+});
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 搜索输入
+// ================================
+
+
+document.addEventListener(
+"input",
+async function(e){
+
+
+if(
+e.target.id==="searchInput"
+){
+
+
+let result =
+await searchInventory(
+e.target.value
+);
+
+
+
+renderSearchResult(result);
+
+
+
+}
+
+
+
+});
+
+
+
+
+
+
+
+
+
+// ================================
+// 查询结果显示
+// ================================
+
+
+function renderSearchResult(list){
+
+
+
+let box =
+document.getElementById(
+"searchResult"
+);
+
+
+
+if(
+list.length===0
+){
+
+box.innerHTML=
+"暂无数据";
 
 return;
 
 }
+
+
+
+let html="";
+
+
+
+list.forEach(item=>{
+
+
+html+=`
+
+<div class="card">
+
+
+<div>
+📍货架：
+${item.shelf}
+</div>
+
+
+<div>
+👕款号：
+${item.style}
+</div>
+
+
+<div>
+🎨颜色：
+${item.color}
+</div>
+
+
+<div class="time">
+
+添加：
+${item.createTime}
+
+<br>
+
+修改：
+${item.updateTime}
+
+</div>
+
+
+</div>
+
+`;
+
+
+
+});
+
+
+
+box.innerHTML=html;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// ================================
+// 管理列表
+// ================================
+
+
+function renderInventoryList(list){
+
+
+
+let box =
+document.getElementById(
+"inventoryList"
+);
+
+
+
+if(!box)
+return;
+
+
+
+let html="";
+
+
+
+list.forEach(item=>{
+
+
+html+=`
+
+<div class="card">
+
+
+<b>
+${item.style}
+</b>
+
+
+<br>
+
+货架:
+${item.shelf}
+
+
+<br>
+
+颜色:
+${item.color}
+
+
+<br>
+
+
+<span>
+
+创建:
+${item.createTime}
+
+<br>
+
+修改:
+${item.updateTime}
+
+</span>
+
+
+<br>
+
+
+
+<button
+onclick="editInventory(${item.id})">
+
+修改
+
+</button>
+
+
+
+<button
+onclick="removeInventory(${item.id})">
+
+删除
+
+</button>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+
+box.innerHTML=html || "暂无数据";
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================================
+// 修改库存
+// ================================
+
+
+async function editInventory(id){
+
+
+
+let item =
+await getDataById(
+"inventory",
+id
+);
+
+
+
+if(!item)
+return;
+
+
+
+
+let shelf =
+prompt(
+"修改货架号",
+item.shelf
+);
+
+
+
+let style =
+prompt(
+"修改款号",
+item.style
+);
+
+
+
+let color =
+prompt(
+"修改颜色",
+item.color
+);
+
 
 
 
@@ -107,11 +511,20 @@ item.color=color;
 
 
 
-await updateInventory(item);
+item.updateTime=
+nowTime();
 
 
 
-await loadInventory();
+
+await updateData(
+"inventory",
+item
+);
+
+
+
+loadInventory();
 
 
 
@@ -124,9 +537,10 @@ await loadInventory();
 
 
 
-// =========================
+
+// ================================
 // 删除库存
-// =========================
+// ================================
 
 
 async function removeInventory(id){
@@ -135,228 +549,49 @@ async function removeInventory(id){
 
 if(
 !confirm(
-"确定删除该库存记录？"
+"确定删除？"
 )
-){
-
+)
 return;
 
-}
 
 
-
-await deleteInventory(id);
-
-
-
-await loadInventory();
-
-
-}
-
-
-
-
-
-
-
-
-
-// =========================
-// 查询库存
-// =========================
-
-
-function searchInventory(keyword){
-
-
-
-keyword =
-keyword
-.trim()
-.toLowerCase();
-
-
-
-if(!keyword){
-
-return [];
-
-}
-
-
-
-
-const keys =
-keyword
-.split(
-/[/\s,，]+/
+await deleteData(
+"inventory",
+id
 );
 
 
 
-return inventoryCache.filter(
-item=>{
+loadInventory();
 
 
-return keys.some(k=>{
+
+}
 
 
-return (
-
-item.style
-.toLowerCase()
-.includes(k)
-
-||
-
-item.color
-.toLowerCase()
-.includes(k)
-
-||
-
-item.shelf
-.toLowerCase()
-.includes(k)
 
 
-);
+
+
+
+
+
+// 启动加载
+
+window.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+
+initDB()
+.then(()=>{
+
+
+loadInventory();
 
 
 });
 
 
-}
-
-);
-
-
-}
-
-
-
-
-
-
-
-
-// =========================
-// 批量导入
-// =========================
-
-
-async function batchCreateInventory(text){
-
-
-const lines =
-text
-.split("\n");
-
-
-let count=0;
-
-
-
-for(
-let line of lines
-){
-
-
-
-line=line.trim();
-
-
-
-if(!line){
-
-continue;
-
-}
-
-
-
-const arr =
-line.split("/");
-
-
-
-if(arr.length!==3){
-
-continue;
-
-}
-
-
-
-await createInventory(
-
-arr[0].trim(),
-
-arr[1].trim(),
-
-arr[2].trim()
-
-);
-
-
-
-count++;
-
-
-}
-
-
-
-return count;
-
-
-}
-
-
-
-
-
-
-
-
-// =========================
-// 获取排序数据
-// =========================
-
-
-function sortInventory(
-data,
-type="shelf"
-){
-
-
-
-return data.sort(
-(a,b)=>{
-
-
-if(type==="style"){
-
-
-return a.style.localeCompare(
-b.style
-);
-
-
-}
-
-
-
-return a.shelf.localeCompare(
-b.shelf
-);
-
-
-
-}
-
-);
-
-
-}
+});
